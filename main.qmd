@@ -1,0 +1,55 @@
+---
+title: "Main"
+format: html
+editor: visual
+---
+
+## Running Code
+
+Habilitar as libs que usaremos e setar o Working diretory
+
+```{r}
+library(rio)
+library(pliman)
+library(metan)
+set_wd_here()
+```
+
+Puxar todas os excels para o R
+
+```{r}
+trat1 <- import(file = "excel originais/resultado_tratamento_1.xlsx")
+trat2 <- import(file = "excel originais/resultado_tratamento_2.xlsx")
+trat3 <- import(file = "excel originais/resultado_tratamento_3.xlsx")
+trat4 <- import(file = "excel originais/resultado_tratamento_4.xlsx")
+trat5 <- import(file = "excel originais/resultado_tratamento_5.xlsx")
+trat6 <- import(file = "excel originais/resultado_tratamento_6.xlsx")
+trat7 <- import(file = "excel originais/resultado_tratamento_7.xlsx")
+trat8 <- import(file = "excel originais/resultado_tratamento_8.xlsx")
+trat9 <- import(file = "excel originais/resultado_tratamento_9.xlsx")
+trat10 <- import(file = "excel originais/resultado_tratamento_10.xlsx")
+```
+
+Fazer a matematica doida
+
+```{r}
+soma_trat_1 <- sum(trat1$prodest)
+soma_trat_2 <- sum(trat2$prodest)
+soma_trat_3 <- sum(trat3$prodest)
+soma_trat_4 <- sum(trat4$prodest)
+soma_trat_5 <- sum(trat5$prodest)
+soma_trat_6 <- sum(trat6$prodest)
+soma_trat_7 <- sum(trat7$prodest)
+soma_trat_8 <- sum(trat8$prodest)
+soma_trat_9 <- sum(trat9$prodest)
+soma_trat_10 <- sum(trat10$prodest)
+
+
+
+df <- data.frame(
+  Ids = c(1,2,3,4,5,6,7,8,9,10),
+  Medias_Ponderadas = c(soma_trat_1,soma_trat_2,soma_trat_3,soma_trat_4,soma_trat_5,soma_trat_6,soma_trat_7,soma_trat_8,soma_trat_9,soma_trat_10)
+)
+
+export(df, "excel modificados/Medias_Ponderadas_Tratamentos.xlsx")
+```
