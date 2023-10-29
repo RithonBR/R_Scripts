@@ -4,14 +4,13 @@ format: html
 editor: visual
 ---
 
-## Running Code
+## Media ponderada do pivo
 
 Habilitar as libs que usaremos e setar o Working diretory
 
 ```{r}
 library(rio)
 library(pliman)
-library(metan)
 set_wd_here()
 ```
 
@@ -30,7 +29,7 @@ trat9 <- import(file = "excel originais/resultado_tratamento_9.xlsx")
 trat10 <- import(file = "excel originais/resultado_tratamento_10.xlsx")
 ```
 
-Fazer a matematica doida
+Fazer a matematica doida que pediram
 
 ```{r}
 soma_trat_1 <- sum(trat1$prodest)
@@ -52,4 +51,169 @@ df <- data.frame(
 )
 
 export(df, "excel modificados/Medias_Ponderadas_Tratamentos.xlsx")
+```
+
+## Analise de solo (SC e RS)
+
+Entrada dos dados na planilha analise e escolha da analise, junto das biblios que serão utilizadas
+
+```{r}
+library(rio) 
+library(pliman) 
+library(ggplot2)
+library(dplyr)
+set_wd_here()
+analise <- import(file = "excel originais/Analise.xlsx")
+
+#Selecionar a Linha do Excel que corresponde a tua amostra
+Amostra <- 4
+Cultura <- "Abacateiro"
+PRNT <- 86.48
+```
+
+Dados que geralmente as analises da epagri de SC dão : P e K em mg/dm3 , Argila, M.O, Saturações em % e Al,Ca,Mg,H+Al,CTC em cmolc/dm3
+
+```{r}
+#Pegar do excel somente a linha escolhida
+Analise_Amostra <- analise[Amostra,]
+
+#Retirar infos do excel
+Argila <- Analise_Amostra [1,2]
+Ph_Agua <- Analise_Amostra [1,3]
+Indice_SMP <- Analise_Amostra [1,4]
+Fosforo <- Analise_Amostra [1,5]
+Potassio <- Analise_Amostra [1,6]
+Materia_Organica <- Analise_Amostra [1,7]
+Aluminio <- Analise_Amostra [1,8]
+Calcio <- Analise_Amostra [1,9]
+Magnesio <- Analise_Amostra [1,10]
+H_Al <- Analise_Amostra [1,11]
+CTC <- Analise_Amostra [1,12]
+Al_saturacao <- Analise_Amostra [1,13]
+V_saturacao <- Analise_Amostra [1,14]
+Soma_Bases <- Analise_Amostra [1,15]
+CaMg <- Analise_Amostra [1,16]
+CaK <- Analise_Amostra [1,17]
+MgK <- Analise_Amostra [1,18]
+```
+
+```{r}
+Culturas_Ph_6Meio <-c( "Alfafa",
+                       "Aspargo",
+                       "Macieira",
+                       "Oliveira",
+                       "Piretro")
+
+Culturas_Ph_6 <- c("Abacateiro",
+                   "Abobora",
+                   "Abobrinha",
+                   "Alcachofra",
+                   "Alface",
+                   "Alho",
+                   "Almeirão")
+
+Culturas_Ph_5Meio <- c("Alfavaca",
+                       "Amoreira Preta",
+                       "Arroz Irrigado SSS",
+                       "Batata",
+                       "Calendula")
+
+Culturas_Sem_Referencia <- c("Arroz-irrigado SPG",
+                             "Araucaria",
+                             "Acacia Negra",
+                             "Bracatinga")
+
+ph_6meio <- data.frame(Culturas_Ph_6Meio)
+
+ph_6 <- data.frame(Culturas_Ph_6)
+
+ph_5meio <- data.frame(Culturas_Ph_5Meio)
+
+ph_Sem_Referencia <- data.frame(Culturas_Sem_Referencia)
+
+Busca_ph6meio <- agrep(pattern=Cultura,
+                       ph_6meio$Culturas_Ph_6Meio,
+                       ignore.case = TRUE,
+                       value = TRUE,
+                       fixed = TRUE)  
+
+Busca_ph6 <- agrep(pattern=Cultura,
+                   ph_6$Culturas_Ph_6,
+                   ignore.case = TRUE,
+                   value = TRUE,
+                   fixed = TRUE)  
+
+Busca_ph5meio <- agrep(pattern=Cultura,
+                       ph_5meio$Culturas_Ph_5Meio,
+                       ignore.case = TRUE,
+                       value = TRUE,
+                       fixed = TRUE)  
+
+logica_1 <- Busca_ph6meio == Cultura 
+logica_2 <- Busca_ph6 == Cultura
+logica_3 <- Busca_ph5meio == Cultura
+
+
+if (length(logica_1 ) == 1){
+  PH_Recomendado <- 6.5
+}else if (length(logica_2) == 1){
+  PH_Recomendado <- 6
+}else if (length(logica_3) == 1){
+  PH_Recomendado <- 5.5
+}else {
+  PH_Recomendado <- 6 
+}
+
+
+SMP <- data.frame(SMP = c(4.4,4.5,4.6,4.7,4.8,4.9,5,5.1,5.2,5.3,5.4,5.5,5.6,5.7,5.8,5.9,6,6.1,6.2,6.3,6.4,6.5,6.6,6.7,6.8,6.9,7,7.1),
+                  SMP_5.5 = c(15,12.5,10.9,9.6,8.5,7.7,6.6,6,5.3,4.8,4.2,3.7,3.2,2.8,2.3,2,1.6,1.3,1,0.8,0.6,0.4,0.2,0,0,0,0,0),
+                  SMP_6 = c(21,17.3,15.1,13.3,11.9,10.7,9.9,9.1,8.3,7.5,6.8,6.1,5.4,4.8,4.2,3.7,3.2,2.7,2.2,1.8,1.4,1.1,0.8,0.5,0.3,0.2,0,0),
+                  SMP_6.5 = c(29,24,20,17.5,15.7,14.2,13.3,12.3,11.3,10.4,9.5,8.6,7.8,7,6.3,5.6,4.9,4.3,3.7,3.1,2.6,2.1,1.6,1.2,0.8,0.5,0.2,0)
+                  )
+```
+
+Calagem
+
+```{r}
+# CALAGEM PELO METODO SMP
+if (Indice_SMP < 4.4){
+  Indice_SMP <- 4.4
+}else if (Indice_SMP > 7.1){
+  Indice_SMP <- 7.1
+}else {
+  Indice_SMP <- Indice_SMP
+}
+
+if (PH_Recomendado == 6.5){
+  print("construcao")
+}else if (PH_Recomendado == 6){
+  print("construcao")
+}else if (PH_Recomendado == 5.5){
+  print("construcao")
+}else {
+  print("construcao")
+}
+
+
+# CALAGEM PELO MENOS SATURAÇAO POR BASES
+if (PH_Recomendado == 6.5){
+  NC_Saturacao <- ((85 - V_saturacao)*(100/PRNT)*CTC)/100
+}else if (PH_Recomendado == 6){
+  NC_Saturacao <- ((75 - V_saturacao)*(100/PRNT)*CTC)/100
+}else if (PH_Recomendado == 5.5){
+  NC_Saturacao <- ((65 - V_saturacao)*(100/PRNT)*CTC)/100
+}else {
+  NC_Saturacao <- ((75 - V_saturacao)/100)*CTC
+}
+
+# CALAGEM POR MATERIA ORGANICA E ALUMINIO
+if (PH_Recomendado == 6.5){
+  NC_MO_AL <-  -0.122 + (1.193*Materia_Organica) + (2.713*Aluminio)
+}else if (PH_Recomendado == 6){
+  NC_MO_AL <- -0.516 + (0.805*Materia_Organica) + (2.435*Aluminio)
+}else if (PH_Recomendado == 5.5){
+  NC_MO_AL <- -0.653 + (0.480*Materia_Organica) + (1.937*Aluminio)
+}else {
+  NC_MO_AL <- ((75 - V_saturacao)/100)*CTC
+}
 ```
